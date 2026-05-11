@@ -1,7 +1,7 @@
 {
   "name": "wh-creative-backend",
   "version": "1.0.0",
-  "description": "WH Creative property booking backend — Microsoft 365 edition",
+  "description": "WH Creative property booking backend — Resend email edition",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -10,7 +10,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.18.2",
-    "node-fetch": "^2.7.0",
+    "resend": "^3.2.0",
     "stripe": "^14.0.0"
   },
   "devDependencies": {
