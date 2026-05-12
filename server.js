@@ -104,7 +104,7 @@ app.post('/submit-booking', async (req, res) => {
       from:    `WH Creative Bookings <bookings@${process.env.EMAIL_DOMAIN}>`,
       to:      process.env.OWNER_EMAIL,
       subject: `New booking — ${seller.name} — ${fmtDate}`,
-      html:    ownerEmail({ seller, agent, serviceLabel, duration, fmtDate, fmtStart, fmtEnd, total, notes, payMethod }),
+      html:    ownerEmail({ seller, agent, serviceLabel, duration, fmtDate, fmtStart, fmtEnd, total, notes, payMethod, date, time }),
     });
 
     res.json({
@@ -300,10 +300,24 @@ function agentEmail({ seller, agent, serviceLabel, duration, fmtDate, fmtStart, 
   `);
 }
 
-function ownerEmail({ seller, agent, serviceLabel, duration, fmtDate, fmtStart, fmtEnd, total, notes, payMethod }) {
+function ownerEmail({ seller, agent, serviceLabel, duration, fmtDate, fmtStart, fmtEnd, total, notes, payMethod, date, time }) {
+  // Build ISO start datetime for Zapier (London time, no timezone conversion needed)
+  const durationHours = serviceLabel.includes('Video') ? 3 : 1;
+  const startISO = `${date}T${time}:00`;
+  const endDT    = new Date(new Date(startISO).getTime() + durationHours * 60 * 60 * 1000);
+  const endISO   = endDT.toISOString().slice(0,16).replace('T',' ');
+
   return wrap('New booking received',
     payMethod === 'stripe' ? '&#8987; Awaiting seller payment' : '&#9989; Confirmed — in-person payment', `
-    ${table([
+    <p style="background:#f0f7ff;border:1px solid #c0d8f0;border-radius:4px;padding:12px 16px;font-size:13px;color:#555;margin-bottom:16px;">
+      <strong>ZAPIER START:</strong> ${date}T${time}:00<br>
+      <strong>ZAPIER END:</strong> ${endISO}<br>
+      <strong>ZAPIER TITLE:</strong> ${serviceLabel} — ${seller.address}
+    </p>
+    <p style="font-size:13px;color:#555;margin-bottom:16px;">
+      <strong>LOCATION:</strong> ${seller.address}
+    </p>
+    \${table([
       ['Service',    `${serviceLabel} (${duration})`],
       ['Date & time', `${fmtDate}<br>${fmtStart} &ndash; ${fmtEnd}`],
       ['Property',   seller.address],
