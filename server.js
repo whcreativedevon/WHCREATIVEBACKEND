@@ -37,12 +37,17 @@ app.post('/submit-booking', async (req, res) => {
 
     // ── Build appointment times ──────────────────────────
     const durationHours = service === 'video' ? 3 : 1;
-    const startDT       = new Date(`${date}T${time}:00`);
-    const endDT         = new Date(startDT.getTime() + durationHours * 60 * 60 * 1000);
+    // Parse date parts directly to avoid UTC timezone shift
+    const [year, month, day] = date.split('-').map(Number);
+    const [hour, minute]     = time.split(':').map(Number);
 
-    const fmtDate  = startDT.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric', timeZone:'Europe/London' });
-    const fmtStart = startDT.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', timeZone:'Europe/London' });
-    const fmtEnd   = endDT.toLocaleTimeString('en-GB',   { hour:'2-digit', minute:'2-digit', timeZone:'Europe/London' });
+    // Build date using local parts — no UTC conversion
+    const startDT = new Date(year, month - 1, day, hour, minute, 0);
+    const endDT   = new Date(startDT.getTime() + durationHours * 60 * 60 * 1000);
+
+    const fmtDate  = startDT.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    const fmtStart = startDT.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+    const fmtEnd   = endDT.toLocaleTimeString('en-GB',   { hour:'2-digit', minute:'2-digit' });
 
     // ── Create Stripe payment link (if stripe method) ────
     let stripePaymentUrl = null;
