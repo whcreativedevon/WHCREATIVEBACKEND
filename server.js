@@ -310,14 +310,12 @@ function ownerEmail({ seller, agent, serviceLabel, duration, fmtDate, fmtStart, 
   return wrap('New booking received',
     payMethod === 'stripe' ? '&#8987; Awaiting seller payment' : '&#9989; Confirmed — in-person payment', `
     <p style="background:#f0f7ff;border:1px solid #c0d8f0;border-radius:4px;padding:12px 16px;font-size:13px;color:#555;margin-bottom:16px;">
-      <strong>ZAPIER START:</strong> ${date}T${time}:00<br>
-      <strong>ZAPIER END:</strong> ${endISO}<br>
-      <strong>ZAPIER TITLE:</strong> ${serviceLabel} — ${seller.address}
+      ZAPIER_START: ${date}T${time}:00<br>
+      ZAPIER_END: ${endISO}<br>
+      ZAPIER_TITLE: ${serviceLabel} - ${seller.address}<br>
+      ZAPIER_LOCATION: ${seller.address}
     </p>
-    <p style="font-size:13px;color:#555;margin-bottom:16px;">
-      <strong>LOCATION:</strong> ${seller.address}
-    </p>
-    \${table([
+    ` + table([
       ['Service',    `${serviceLabel} (${duration})`],
       ['Date & time', `${fmtDate}<br>${fmtStart} &ndash; ${fmtEnd}`],
       ['Property',   seller.address],
@@ -325,9 +323,8 @@ function ownerEmail({ seller, agent, serviceLabel, duration, fmtDate, fmtStart, 
       ['Booked by',  `${agent.name}<br>${agent.email}`],
       ['Payment',    payMethod === 'stripe' ? '&#8987; Awaiting Stripe payment' : '&#128179; In-person card on the day'],
       ['Total',      `&pound;${total}`],
-    ])}
-    ${notes ? note(notes) : ''}
-  `);
+    ]) + (notes ? note(notes) : ''),
+  );
 }
 
 function receiptEmail({ sellerName, serviceLabel, fmtDate, fmtStart, total, address, stagingGuideUrl, paymentRef }) {
